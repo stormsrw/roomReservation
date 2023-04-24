@@ -1,7 +1,8 @@
+// DataBase Project Room Reservation.
+// Andrew Pries, Lukas Nilson, Ryan Storms.
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.*;
 import java.util.Vector;
 import java.sql.Connection;
@@ -11,12 +12,12 @@ import java.sql.SQLException;
 public class RoomReservation {
     public static void main(String[] args) {
         try{
-            String dbURL = "jdbc:sqlite:C:/Users/ryns8/OneDrive/Desktop/code/database/RoomReservation/trial.db";
+            // Connects to database.
+            String dbURL = "jdbc:sqlite:trial.db";
             Connection conn = null;
             conn = DriverManager.getConnection(dbURL);
             Statement st = conn.createStatement();
-            //create and execute a query what will make a table in the specific database
-            //String sql = "CREATE TABLE IF NOT EXISTS users (\n" + " Username text NOT NULL ,\n" + " Password text NOT NULL ,\n" + ");";
+            // Creates all the tables in the database.
             String createTableUsers = "CREATE TABLE IF NOT EXISTS users (" +
                     "ID TEXT PRIMARY KEY," +
                     "Email VARCHAR(255) UNIQUE NOT NULL," +
@@ -25,14 +26,11 @@ public class RoomReservation {
                     "Lname VARCHAR(255)" +
                     ");";
             st.execute(createTableUsers);
-
             String createTableBuilding = "CREATE TABLE IF NOT EXISTS Building (" +
                     "B_code VARCHAR(255) PRIMARY KEY," +
                     "campus VARCHAR(255) NOT NULL" +
                     ");";
             st.execute(createTableBuilding);
-
-
             String createTableRooms = "CREATE TABLE IF NOT EXISTS rooms (" +
                     "roomNumber INT PRIMARY KEY," +
                     "capacity INT NOT NULL," +
@@ -40,7 +38,6 @@ public class RoomReservation {
                     "FOREIGN KEY (B_code) REFERENCES Building (B_code)" +
                     ");";
             st.execute(createTableRooms);
-
             String createTableReservations = "CREATE TABLE IF NOT EXISTS reservations (" +
                     "reservationID INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     "ID TEXT, " +
@@ -55,7 +52,6 @@ public class RoomReservation {
                     ");";
 
             st.execute(createTableReservations);
-
             String insertFirstUser = "INSERT OR IGNORE INTO users (ID, Email, Password, Fname, Lname)" +
                     "VALUES (" +
                     "'admin'," +
@@ -64,8 +60,6 @@ public class RoomReservation {
                     "'firstName'," +
                     "'Lastname'" +
                     ");";
-
-
             st.execute(insertFirstUser);
             String insertSecondUser = "INSERT OR IGNORE INTO users (ID, Email, Password, Fname, Lname)" +
                     "VALUES (" +
@@ -81,21 +75,18 @@ public class RoomReservation {
         catch (SQLException e)
         {
             System.out.println(e.getMessage());
-
         }
-
     }
 }
 
+//Creates the GUI where the admins can log in.
 class LoginGUI {
     private JTextField txtEmail;
     private JPasswordField txtPassword;
     private JButton btnLogin;
     private JFrame frame;
-    private final int height = 400;
-    private final int width= 400;
-
-
+    private final int height = 150;
+    private final int width = 350;
 
     void createAndShowGUI() {
         frame = new JFrame("Login");
@@ -121,14 +112,13 @@ class LoginGUI {
         frame.setVisible(true);
     }
 
+    // Uses the database to make sure the password and ID are correct for the login.
     private void login() {
-        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:C:/Users/ryns8/OneDrive/Desktop/code/database/RoomReservation/trial.db")) {
+        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:trial.db")) {
             String query = "SELECT * FROM users WHERE ID = ? AND Password = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, txtEmail.getText());
             preparedStatement.setString(2, new String(txtPassword.getPassword()));
-            System.out.println("fail");
-
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 JOptionPane.showMessageDialog(frame, "Login successful!");
@@ -144,6 +134,7 @@ class LoginGUI {
     }
 }
 
+// Creates a options menu for all the selection that the admin can make.
 class OptionsGUI {
     private JFrame frame;
     private final int height = 400;
@@ -201,6 +192,8 @@ class OptionsGUI {
         frame.setVisible(true);
     }
 }
+
+// This creates the add room GUI.
 class AddRoomGUI {
     private JFrame frame;
     private JTextField txtRoomNumber;
@@ -243,8 +236,9 @@ class AddRoomGUI {
         frame.setVisible(true);
     }
 
+    // Adds room to database once user enters all variables.
     private void addRoom() {
-        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:C:/Users/ryns8/OneDrive/Desktop/code/database/RoomReservation/trial.db")) {
+        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:trial.db")) {
             String query = "INSERT INTO rooms (roomNumber, capacity, B_code) VALUES (?, ?, ?)";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setInt(1, Integer.parseInt(txtRoomNumber.getText()));
@@ -264,6 +258,7 @@ class AddRoomGUI {
     }
 }
 
+// Creates the delete room GUI
 class DeleteRoomGUI {
     private JFrame frame;
     private JTextField txtRoomNumber;
@@ -302,8 +297,9 @@ class DeleteRoomGUI {
         frame.setVisible(true);
     }
 
+    // Finds which room it must delete from the user then deletes it form the database.
     private void deleteRoom() {
-        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:C:/Users/ryns8/OneDrive/Desktop/code/database/RoomReservation/trial.db")) {
+        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:trial.db")) {
             String query = "DELETE FROM rooms WHERE roomNumber = ? AND B_code = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setInt(1, Integer.parseInt(txtRoomNumber.getText()));
@@ -327,6 +323,8 @@ class DeleteRoomGUI {
         }
     }
 }
+
+// Creates UpdateRoom GUI.
 class UpdateRoomGUI {
     private JFrame frame;
     private JTextField txtRoomNumber;
@@ -339,7 +337,6 @@ class UpdateRoomGUI {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new GridLayout(3, 2));
         frame.setSize(height,width);
-
 
         frame.add(new JLabel("Room Number:"));
         txtRoomNumber = new JTextField();
@@ -364,8 +361,9 @@ class UpdateRoomGUI {
         frame.setVisible(true);
     }
 
+    // Finds what room the user wants to update and opens a new GUI.
     private void updateRoom() {
-        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:C:/Users/ryns8/OneDrive/Desktop/code/database/RoomReservation/trial.db")) {
+        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:trial.db")) {
             String query = "SELECT * FROM rooms WHERE roomNumber = ? AND B_Code = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setInt(1, Integer.parseInt(txtRoomNumber.getText()));
@@ -389,6 +387,7 @@ class UpdateRoomGUI {
     }
 }
 
+// Creates GUI of the details of the room you want to update.
 class UpdateRoomDetailsGUI {
     private JFrame frame;
     private JTextField txtRoomNumber;
@@ -435,8 +434,9 @@ class UpdateRoomDetailsGUI {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
+    // Saves the room details to the database.
     private void saveRoomDetails() {
-        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:C:/Users/ryns8/OneDrive/Desktop/code/database/RoomReservation/trial.db")) {
+        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:trial.db")) {
             String query = "UPDATE rooms SET roomNumber = ?, capacity = ?, B_code = ? WHERE roomNumber = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setInt(1, Integer.parseInt(txtRoomNumber.getText()));
@@ -459,11 +459,11 @@ class UpdateRoomDetailsGUI {
 
 
 
-
+// Creates the book room GUI.
 class BookRoomGUI {
+
     private JFrame frame;
     private JTextField txtRoomNumber;
-
     private JTextField txtB_Code;
     private JTextField txtDate;
     private JTextField txtStartTime;
@@ -522,11 +522,11 @@ class BookRoomGUI {
         frame.setVisible(true);
     }
 
+    // Adds the room you want to book to the the database/
     private void bookRoom() {
-        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:C:/Users/ryns8/OneDrive/Desktop/code/database/RoomReservation/trial.db")) {
+        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:trial.db")) {
             String query = "SELECT * FROM reservations WHERE roomNumber = ? AND B_code = ? AND date = ? AND time = ?";
             String txtTime = (txtStartTime.getText() + "-" + txtEndTime.getText());
-            System.out.println(txtTime);
             PreparedStatement preparedStatement = connection.prepareStatement(query);
 
             preparedStatement.setInt(1, Integer.parseInt(txtRoomNumber.getText()));
@@ -547,7 +547,6 @@ class BookRoomGUI {
                 preparedStatement.setString(5, txtTime);
                 preparedStatement.setString(6, txtReservationName.getText());
 
-
                 int result = preparedStatement.executeUpdate();
                 if (result > 0) {
                     JOptionPane.showMessageDialog(frame, "Room booked successfully!");
@@ -561,12 +560,14 @@ class BookRoomGUI {
         }
     }
 }
+
+// Creates the GUI for the search for a booked Room.
 class SearchGUI {
+
     private JFrame frame;
     private JTextField txtReservationName;
     private JTextField txtUserName;
     private JTextField txtRoomNumber;
-
     private JTextField txtB_Code;
     private final int height = 400;
     private final int width= 400;
@@ -576,7 +577,6 @@ class SearchGUI {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new GridLayout(5, 2));
         frame.setSize(height,width);
-
 
         frame.add(new JLabel("Reservation Name:"));
         txtReservationName = new JTextField();
@@ -609,8 +609,9 @@ class SearchGUI {
         frame.setVisible(true);
     }
 
+    // Finds the reservation from the database that was searched for by the User.
     private void searchReservations() {
-        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:C:/Users/ryns8/OneDrive/Desktop/code/database/RoomReservation/trial.db")) {
+        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:trial.db")) {
             StringBuilder queryBuilder = new StringBuilder("SELECT * FROM reservations WHERE 1=1");
             if (!txtReservationName.getText().isEmpty()) {
                 queryBuilder.append(" AND LOWER(ReservationName) LIKE LOWER(?)");
@@ -652,6 +653,7 @@ class SearchGUI {
 
 }
 
+// Creates the GUI for the results from the reservation search.
 class SearchResultGUI {
     private JFrame frame;
     private JTable table;
@@ -689,7 +691,6 @@ class SearchResultGUI {
         frame.setLayout(new BorderLayout());
         frame.setSize(width,height);
 
-
         JScrollPane scrollPane = new JScrollPane(table);
         frame.add(scrollPane, BorderLayout.CENTER);
 
@@ -703,6 +704,3 @@ class SearchResultGUI {
         frame.setVisible(true);
     }
 }
-
-
-
